@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Ishant_Shop</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <h1>Ishant_Shop</h1>
+            <p>Admin Panel</p>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Back to Site</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h2>Add New Content</h2>
+        </div>
+        
+        <form class="admin-form" id="contentForm">
+            <div class="form-group">
+                <label for="contentType">Content Type</label>
+                <select id="contentType" required>
+                    <option value="movie">Movie</option>
+                    <option value="app">APK</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="contentTitle">Title</label>
+                <input type="text" id="contentTitle" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="contentImage">Image URL</label>
+                <input type="url" id="contentImage" placeholder="https://example.com/image.jpg">
+            </div>
+            
+            <div class="form-group">
+                <label for="contentInfo">Info (size, quality, version)</label>
+                <input type="text" id="contentInfo">
+            </div>
+            
+            <div class="form-group">
+                <label for="contentLink">Google Drive Link</label>
+                <input type="url" id="contentLink" required>
+            </div>
+            
+            <button type="submit" class="submit-btn">Add Content</button>
+        </form>
+        
+        <div class="content-list">
+            <h3>Movies</h3>
+            <div id="moviesList"></div>
+            
+            <h3>APKs</h3>
+            <div id="appsList"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Display existing content
+            displayContent();
+            
+            // Handle form submission
+            document.getElementById('contentForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const type = document.getElementById('contentType').value;
+                const title = document.getElementById('contentTitle').value;
+                const image = document.getElementById('contentImage').value || 'https://via.placeholder.com/300x200';
+                const info = document.getElementById('contentInfo').value || '';
+                const link = document.getElementById('contentLink').value;
+                
+                // Create new content item
+                const newItem = {
+                    id: Date.now(),
+                    title,
+                    image,
+                    info,
+                    link
+                };
+                
+                // Get existing items from localStorage
+                const storageKey = type === 'movie' ? 'movies' : 'apps';
+                const existingItems = JSON.parse(localStorage.getItem(storageKey)) || [];
+                
+                // Add new item and save back to localStorage
+                existingItems.push(newItem);
+                localStorage.setItem(storageKey, JSON.stringify(existingItems));
+                
+                // Reset form and update display
+                this.reset();
+                displayContent();
+                
+                alert('Content added successfully!');
+            });
+        });
+        
+        function displayContent() {
+            const movies = JSON.parse(localStorage.getItem('movies')) || [];
+            const apps = JSON.parse(localStorage.getItem('apps')) || [];
+            
+            document.getElementById('moviesList').innerHTML = movies.map(item => createContentItem(item, 'movie')).join('');
+            document.getElementById('appsList').innerHTML = apps.map(item => createContentItem(item, 'app')).join('');
+        }
+        
+        function createContentItem(item, type) {
+            return `
+                <div class="content-item">
+                    <div>
+                        <strong>${item.title}</strong>
+                        <p>${item.info}</p>
+                    </div>
+                    <button class="delete-btn" onclick="deleteItem('${item.id}', '${type}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+        }
+        
+        function deleteItem(id, type) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                const storageKey = type === 'movie' ? 'movies' : 'apps';
+                const items = JSON.parse(localStorage.getItem(storageKey)) || [];
+                
+                const updatedItems = items.filter(item => item.id != id);
+                localStorage.setItem(storageKey, JSON.stringify(updatedItems));
+                
+                displayContent();
+            }
+        }
+    </script>
+</body>
+</html>
